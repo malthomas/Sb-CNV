@@ -9,6 +9,7 @@ folder <- "C:/Users/malth/Documents/CNV/Ratios"
 # Read each Sb file in the list
   CN_read <-  lapply(CN_list, read.table, header=T, sep="\t")
   
+  
 
   
 ##TOTAL DATAFRAME  
@@ -49,6 +50,8 @@ folder <- "C:/Users/malth/Documents/CNV/Ratios"
   
   write.csv(CN_cst, file = 'C:/Users/malth/Documents/CNV/CN_cst.csv') #save dataframe
   
+  
+  
 
 ##CALCULATE VARIANCE  
 # total variance
@@ -56,13 +59,15 @@ folder <- "C:/Users/malth/Documents/CNV/Ratios"
   var_total <- summarise_at(CN_total, vars(1:208889), var) #apply the variance function to each column, output new data frame
   var_total <- t(var_total) #transpose dataframe, output matrix
   colnames(var_total) <- c("Total Variance") #name variable column
-
+  write.csv(var_total, file = 'C:/Users/malth/Documents/CNV/var_total.csv') #save dataframe
+  
   
 # montane variance
   CN_mnt <- as.tbl(CN_mnt) #convert dataframe to tibble 
   var_mnt <- summarise_at(CN_mnt, vars(1:208889), var) #apply the variance function to each column, output new data frame
   var_mnt <- t(var_mnt) #transpose dataframe, output matrix
   colnames(var_mnt) <- c("Total Variance") #name variable column
+  write.csv(var_mnt, file = 'C:/Users/malth/Documents/CNV/var_mnt.csv') #save dataframe
   
   
 # coastal variance
@@ -70,6 +75,7 @@ folder <- "C:/Users/malth/Documents/CNV/Ratios"
   var_cst <- summarise_at(CN_cst, vars(1:208889), var) #apply the variance function to each column, output new data frame
   var_cst <- t(var_cst) #transpose dataframe, output matrix
   colnames(var_cst) <- c("Total Variance") #name variable column
+  write.csv(var_cst, file = 'C:/Users/malth/Documents/CNV/var_cst.csv') #save dataframe
   
 
 ##COMBINE VARIANCE DATAFRAMES
