@@ -1,11 +1,11 @@
-library("tidyverse") 
-library("stats") #variance function
+library(tidyverse) 
+library(stats) #variance function
+library(readr)
 setwd("C:/Users/malth/Documents/CNV/Ratios")
-folder <- "C:/Users/malth/Documents/CNV/Ratios"
 
-# List Sb files 
+# List Sb files
+  folder <- "C:/Users/malth/Documents/CNV/Ratios"
   CN_list <-  list.files(path = folder, recursive = TRUE, full.names = FALSE,)
-  
 # Read each Sb file in the list
   CN_read <-  lapply(CN_list, read.table, header=T, sep="\t")
   
@@ -19,7 +19,8 @@ folder <- "C:/Users/malth/Documents/CNV/Ratios"
             as.data.frame() %>% #create dataframe        
             unite("window", Chromosome:Start, remove = T) #create row id
     
-# Transpose dataframe
+  
+  # Transpose dataframe
   window <- CN_df$window #remember row id
   CN_total <- as.data.frame(t(CN_df[,-1])) #transpose dataframe, exclude 1st colunmn
   colnames(CN_total) <- window #create column names  
@@ -79,14 +80,68 @@ folder <- "C:/Users/malth/Documents/CNV/Ratios"
   
 
 ##COMBINE VARIANCE DATAFRAMES
-
-
-##CALCULATE VST
-
-
-##MANHATTAN PLOT
-
-          
-              
+# List variance files
+  variances <- "C:/Users/malth/Documents/CNV/Variances"
+  var_list <-  list.files(path = variances, recursive = TRUE, full.names = T,)
+# Read each variance file in the list
+  var_read <-  lapply(var_list, read.csv, header=T, sep=",")
+# Make variances dataframe
+    var_df <- bind_cols(var_read) %>% #bind columns from Sb files
+    select(Window, ends_with("Variance"))%>% #select variables of interest
+    as.data.frame()#create dataframe
     
-            
+# Calaculate VST
+  SbVST <- var_df %>%
+          mutate(VST = ((Total-((Cst*11+Mnt*16)/27))/Total) ) %>%
+          select(Window, VST)
+  write.csv(SbVST, file = 'C:/Users/malth/Documents/CNV/SbVST.csv') #save dataframe
+
+
+##MANHATTAN PLOT 
+#total
+library(cn.mops)
+library(qqman)
+library(tidyverse)
+vst <- read.csv("C:/Users/malth/Documents/CNV/SbVST.csv", sep="\t")
+
+vst <- filter(vst, Vst != "NA")
+vst$scaffold <- as.numeric(vst$scaffold)
+vst$Vst <- as.numeric(vst$Vst)
+    
+manhattan(vst, chr = "scaffold", bp = "position", p = "Vst", logp=FALSE, ylab="Vst",
+          col = c("gray10","gray60"),
+          )
+
+#Count windows / scaffold 
+vst_n < - vst %>% 
+  count(sort = TRUE, scaffold)
+  
+# Average Vst / scaffold
+library(graphics)
+
+vst_avg <- vst %>%
+  group_by(scaffold)%>%
+  summarise(mean(Vst))
+
+barplot(vst_avg$`mean(Vst)`, ylim = c(0,0.25),xpd = F,
+        xlab = "scaffold", ylab = "Average Vst")
+
+# scaffolds 1 - 100
+vst <- read.csv("C:/Users/malth/Documents/CNV/SbVST.csv", sep="\t")
+
+
+vst <- filter(vst, Vst != "NA")
+vst$scaffold <- as.numeric(vst$scaffold)
+vst$Vst <- as.numeric(vst$Vst)
+
+vst100 <- filter(vst, scaffold <= 100 )
+write.csv(vst, file = 'C:/Users/malth/Documents/CNV/vst100.csv') #save dataframe
+
+
+manhattan(vst100, chr = "scaffold", bp = "position", p = "Vst", logp=FALSE, ylab="Vst",
+          col = c("gray10","gray60"), ylim =  c(0, 0.4), cex.axis = 0.9)
+
+# top 1%
+vst1 <-filter(vst100, Vst > 0.10238095)
+write.csv(vst1, file = 'C:/Users/malth/Documents/CNV/vst1.csv') #save dataframe
+
