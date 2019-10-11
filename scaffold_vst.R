@@ -1,16 +1,19 @@
 library(tidyverse) 
 library(stats) #variance function
-library(readr)
-setwd("C:/Users/malth/Documents/CNV/Ratios")
+library(readr) #readcsv
+library(cn.mops)#manhattan plot
+library(qqman)#manhattan plot
+library(graphics)#manhattan plot
 
 # List Sb files
+  setwd("C:/Users/malth/Documents/CNV/Ratios")
   folder <- "C:/Users/malth/Documents/CNV/Ratios"
   CN_list <-  list.files(path = folder, recursive = TRUE, full.names = FALSE,)
 # Read each Sb file in the list
   CN_read <-  lapply(CN_list, read.table, header=T, sep="\t")
-  
-  
 
+  
+  
   
 ##TOTAL DATAFRAME  
 # Create dataframe
@@ -60,7 +63,7 @@ setwd("C:/Users/malth/Documents/CNV/Ratios")
   var_total <- summarise_at(CN_total, vars(1:208889), var) #apply the variance function to each column, output new data frame
   var_total <- t(var_total) #transpose dataframe, output matrix
   colnames(var_total) <- c("Total Variance") #name variable column
-  write.csv(var_total, file = 'C:/Users/malth/Documents/CNV/var_total.csv') #save dataframe
+  write.csv(var_total, file = 'C:/Users/malth/Documents/CNV/Variances/var_total.csv') #save dataframe
   
   
 # montane variance
@@ -68,7 +71,7 @@ setwd("C:/Users/malth/Documents/CNV/Ratios")
   var_mnt <- summarise_at(CN_mnt, vars(1:208889), var) #apply the variance function to each column, output new data frame
   var_mnt <- t(var_mnt) #transpose dataframe, output matrix
   colnames(var_mnt) <- c("Total Variance") #name variable column
-  write.csv(var_mnt, file = 'C:/Users/malth/Documents/CNV/var_mnt.csv') #save dataframe
+  write.csv(var_mnt, file = 'C:/Users/malth/Documents/CNV/Variances/var_mnt.csv') #save dataframe
   
   
 # coastal variance
@@ -76,9 +79,12 @@ setwd("C:/Users/malth/Documents/CNV/Ratios")
   var_cst <- summarise_at(CN_cst, vars(1:208889), var) #apply the variance function to each column, output new data frame
   var_cst <- t(var_cst) #transpose dataframe, output matrix
   colnames(var_cst) <- c("Total Variance") #name variable column
-  write.csv(var_cst, file = 'C:/Users/malth/Documents/CNV/var_cst.csv') #save dataframe
+  write.csv(var_cst, file = 'C:/Users/malth/Documents/CNV/Variances/var_cst.csv') #save dataframe
   
 
+  
+  
+  
 ##COMBINE VARIANCE DATAFRAMES
 # List variance files
   variances <- "C:/Users/malth/Documents/CNV/Variances"
@@ -96,47 +102,40 @@ setwd("C:/Users/malth/Documents/CNV/Ratios")
           select(Window, VST)
   write.csv(SbVST, file = 'C:/Users/malth/Documents/CNV/SbVST.csv') #save dataframe
 
+  
+##In text editor, clean SbVst File 
+  # columns : scaffold, position, Vst
+  # tabs between columns 
+  
+  
+  
 
 ##MANHATTAN PLOT 
-#total
-library(cn.mops)
-library(qqman)
-library(tidyverse)
 vst <- read.csv("C:/Users/malth/Documents/CNV/SbVST.csv", sep="\t")
-
+  
+# Total Manhattan Plot
 vst <- filter(vst, Vst != "NA")
 vst$scaffold <- as.numeric(vst$scaffold)
 vst$Vst <- as.numeric(vst$Vst)
-    
+
 manhattan(vst, chr = "scaffold", bp = "position", p = "Vst", logp=FALSE, ylab="Vst",
-          col = c("gray10","gray60"),
-          )
+          col = c("gray10","gray60"))
 
 #Count windows / scaffold 
 vst_n < - vst %>% 
   count(sort = TRUE, scaffold)
   
-# Average Vst / scaffold
-library(graphics)
-
+# Average (Vst/scaffold) Bar Plot
 vst_avg <- vst %>%
   group_by(scaffold)%>%
   summarise(mean(Vst))
-
 barplot(vst_avg$`mean(Vst)`, ylim = c(0,0.25),xpd = F,
         xlab = "scaffold", ylab = "Average Vst")
+abline(v=101, col = "red")
 
-# scaffolds 1 - 100
-vst <- read.csv("C:/Users/malth/Documents/CNV/SbVST.csv", sep="\t")
-
-
-vst <- filter(vst, Vst != "NA")
-vst$scaffold <- as.numeric(vst$scaffold)
-vst$Vst <- as.numeric(vst$Vst)
-
+# scaffolds 1-100 Plot 
 vst100 <- filter(vst, scaffold <= 100 )
 write.csv(vst, file = 'C:/Users/malth/Documents/CNV/vst100.csv') #save dataframe
-
 
 manhattan(vst100, chr = "scaffold", bp = "position", p = "Vst", logp=FALSE, ylab="Vst",
           col = c("gray10","gray60"), ylim =  c(0, 0.4), cex.axis = 0.9)
@@ -144,4 +143,8 @@ manhattan(vst100, chr = "scaffold", bp = "position", p = "Vst", logp=FALSE, ylab
 # top 1%
 vst1 <-filter(vst100, Vst > 0.10238095)
 write.csv(vst1, file = 'C:/Users/malth/Documents/CNV/vst1.csv') #save dataframe
+
+#color the 1% dots on the vst100 plot 
+manhattan(vst100, chr = "scaffold", bp = "position", p = "Vst", logp=FALSE, ylab="Vst",
+          col = c("gray10","gray60"), ylim =  c(0, 0.4), cex.axis = 0.9)
 
