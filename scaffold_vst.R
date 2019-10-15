@@ -1,9 +1,9 @@
 library(tidyverse) 
 library(stats) #variance function
 library(readr) #readcsv
-library(cn.mops)#manhattan plot
-library(qqman)#manhattan plot
-library(graphics)#manhattan plot
+library(cn.mops) #manhattan plot
+library(qqman) #manhattan plot
+library(graphics) #manhattan plot
 
 # List Sb files
   setwd("C:/Users/malth/Documents/CNV/Ratios")
@@ -144,7 +144,14 @@ manhattan(vst100, chr = "scaffold", bp = "position", p = "Vst", logp=FALSE, ylab
 vst1 <-filter(vst100, Vst > 0.10238095)
 write.csv(vst1, file = 'C:/Users/malth/Documents/CNV/vst1.csv') #save dataframe
 
+
 #color the 1% dots on the vst100 plot 
-manhattan(vst100, chr = "scaffold", bp = "position", p = "Vst", logp=FALSE, ylab="Vst",
-          col = c("gray10","gray60"), ylim =  c(0, 0.4), cex.axis = 0.9)
+vst_final <- vst100 %>% 
+  mutate(group = case_when(Vst > 0.10238095 ~ "grp1", Vst <0.10238095 ~ "other"))
+
+pct1=c("grp1")
+
+manhattan(vst_final, chr = "scaffold", bp = "position", p = "Vst", snp = "group", logp=FALSE, ylab="Vst",
+          col = c("gray10","gray60"), ylim =  c(0, 0.4), cex.axis = 0.9,
+          highlight = pct1)
 
