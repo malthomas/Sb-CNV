@@ -393,7 +393,7 @@ manhattan <- function(x, chr="CHR", bp="BP", p="P", snp="SNP", group = "group", 
 
 
 # load VST Dataframe  
-  vst <- read.csv("C:/Users/malth/Documents/CNV/DataFrame/SbVST.csv", sep="\t")
+  vst <- read.csv("C:/Users/malth/Documents/CNV/DataFrames/SbVST.csv", sep="\t")
   
 # set up dataframe for manhattan plot function
   vst <- filter(vst, Vst != "NA") #remove rows where Vst values is NA
@@ -416,17 +416,26 @@ manhattan <- function(x, chr="CHR", bp="BP", p="P", snp="SNP", group = "group", 
             col = c("gray10","gray60"), ylim =  c(0, 0.4), cex.axis = 0.9,
             highlight = pct1)
   
-# scaffolds 1-100 proportion of the genome
-  vst_n <- filter(vst,Vst != "NA" )%>%
+## scaffolds 1-100 proportion of the genome
+  
+# Length of whole genome  
+  vst_n <- vst %>%
     group_by(scaffold)%>%
     count()
-  vst_bp <- (sum(vst_n$n)*250)
+  vst_n_bp <- sum(vst_n$n)*250
+  print(vst_n_bp)
   
-  vst100_n <- filter(vst, scaffold <= 100,Vst != "NA" )%>%
-  group_by(scaffold)%>%
+# Length of scaffolds 1-100  
+  vst100_n <- filter(vst, scaffold <= 100)%>%
+    group_by(scaffold)%>%
     count()
-  vst100_bp_ratio<- ((sum(vst100_n$n)*250)/(sum(vst_n$n)*250))
+  vst100_n_bp <- sum(vst100_n$n)*250
+  print(vst100_n_bp)
+  
+# Proportion of genome - scaffolds 1-100
+  vst100_bp_ratio<- (vst100_n_bp/vst_n_bp)
   print(vst100_bp_ratio)
+  
   
 
 
